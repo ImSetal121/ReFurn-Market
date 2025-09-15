@@ -1,0 +1,73 @@
+spring:
+  application:
+    name: backend-start
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      database: 0
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/reflip-database
+    username: postgres
+    password: ${POSTGRES_PASSWORD}
+
+mybatis-plus:
+  global-config:
+    db-config:
+      logic-delete-field: is_deleted
+      logic-not-delete-value: false
+      logic-delete-value: true
+
+logging:
+  level:
+    org:
+      charno: DEBUG
+
+value:
+  jwt-secret-key: ${JWT_SECRET_KEY}
+
+# AWS S3配置
+aws:
+  s3:
+    access-key-id: ${AWS_ACCESS_KEY_ID}
+    secret-access-key: ${AWS_SECRET_ACCESS_KEY}
+    region: ${AWS_REGION}
+    bucket-name: ${AWS_S3_BUCKET_NAME}
+    presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION}
+    base-path: ${AWS_S3_BASE_PATH}
+
+# Google OAuth2配置
+google:
+  oauth2:
+    # Web客户端配置
+    web:
+      client-id: ${GOOGLE_OAUTH2_WEB_CLIENT_ID}
+      client-secret: ${GOOGLE_OAUTH2_WEB_CLIENT_SECRET}
+      redirect-uri: ${GOOGLE_OAUTH2_WEB_REDIRECT_URI}
+    # iOS客户端配置
+    ios:
+      client-id: ${GOOGLE_OAUTH2_IOS_CLIENT_ID}
+    # 通用配置 - 使用逗号分隔的字符串格式
+    scopes: ${GOOGLE_OAUTH2_SCOPES}
+  # Google Maps API配置
+  maps:
+    api-key: ${GOOGLE_MAPS_API_KEY}
+    # 地图默认配置
+    default-center:
+      latitude: ${GOOGLE_MAPS_DEFAULT_LAT}
+      longitude: ${GOOGLE_MAPS_DEFAULT_LNG}
+    default-zoom: ${GOOGLE_MAPS_DEFAULT_ZOOM}
+
+# Stripe支付配置
+stripe:
+  # Stripe密钥配置
+  secret-key: ${STRIPE_SECRET_KEY}
+  publishable-key: ${STRIPE_PUBLISHABLE_KEY}
+  webhook-secret: ${STRIPE_WEBHOOK_SECRET}
+  # Stripe Connect配置
+  connect:
+    # 您的Stripe Connect Client ID
+    client-id: ${STRIPE_CONNECT_CLIENT_ID}
+    refresh-url: ${STRIPE_CONNECT_REFRESH_URL}
+    return-url: ${STRIPE_CONNECT_RETURN_URL}
