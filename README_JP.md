@@ -1,6 +1,6 @@
 # ReFlip Market（中古家具取引プラットフォーム）
 
-中古家具流通向けのフルスタックプロジェクトで、バックエンド多モジュールサービス（Spring Boot 3 + MyBatis-Plus + Redis + JWT）、管理画面（React 19 + Vite 6 + Tailwind v4）、モバイル/クライアントアプリ（Flutter 3、Google ログイン、Google マップ、Stripe 決済などを統合）を含みます。このリポジトリは完全なプロジェクト経験の展示に適しており、システム設計からエンジニアリング実装、ビジネスプロセス完結までの能力を実証します。
+中古家具流通向けのフルスタックプロジェクトで、バックエンド多モジュールサービス（Spring Boot 3 + MyBatis-Plus + Redis + JWT）、管理画面（React 19 + Vite 6 + Tailwind v4）、モバイル/クライアントアプリ（Flutter 3、Google ログイン、Google マップ、Stripe 決済などを統合）を含みます。
 
 ## 機能とスクリーンショット
 
@@ -103,6 +103,16 @@
   - `backend-common`：共通ユーティリティとインフラストラクチャ
 - 管理画面：`frontend-panel-react`（React + Vite + Tailwind v4 + TanStack Router）
 - クライアント：`frontend-app/reflip_flutter`（Flutter 3、Dio/Google Sign-In/Google Maps/Stripe）
+
+### 商品流通エンティティ関係図
+
+<div align="center">
+
+<img src="img/er.jp.svg" alt="商品流通エンティティ関係図" width="800" />
+
+*商品流通エンティティ関係図 - 委託販売モード、セルフピックアップモード、返品プロセスのデータエンティティ関係を示す*
+
+</div>
 
 ## 技術スタック
 

@@ -1,0 +1,217 @@
+@startuml 商品流转实体关系图
+
+!theme plain
+skinparam linetype ortho
+skinparam backgroundColor #FFFFFF
+skinparam class {
+    BackgroundColor #E8F4FD
+    BorderColor #2E86AB
+    ArrowColor #2E86AB
+}
+
+' 核心实体
+entity "商品 (rf_product)" as Product {
+    + id : BIGINT
+    + user_id : BIGINT
+    + name : VARCHAR
+    + is_auction : BOOLEAN
+    + is_self_pickup : BOOLEAN
+    + warehouse_id : BIGINT
+    + status : VARCHAR
+}
+
+entity "商品销售记录 (rf_product_sell_record)" as SellRecord {
+    + id : BIGINT
+    + product_id : BIGINT
+    + seller_user_id : BIGINT
+    + buyer_user_id : BIGINT
+    + is_auction : BOOLEAN
+    + is_self_pickup : BOOLEAN
+    + status : VARCHAR
+}
+
+' 寄卖模式相关实体
+entity "寄卖物流记录 (rf_product_auction_logistics)" as AuctionLogistics {
+    + id : BIGINT
+    + product_id : BIGINT
+    + pickup_address : TEXT
+    + warehouse_id : BIGINT
+    + status : VARCHAR
+}
+
+entity "仓库入库申请 (rf_warehouse_in_apply)" as WarehouseInApply {
+    + id : BIGINT
+    + warehouse_id : BIGINT
+    + product_id : BIGINT
+    + source : VARCHAR
+    + audit_result : VARCHAR
+    + status : VARCHAR
+}
+
+entity "仓库入库 (rf_warehouse_in)" as WarehouseIn {
+    + id : BIGINT
+    + warehouse_id : BIGINT
+    + product_id : BIGINT
+    + in_quantity : INTEGER
+    + in_time : TIMESTAMP
+}
+
+entity "仓库库存 (rf_warehouse_stock)" as WarehouseStock {
+    + id : BIGINT
+    + warehouse_id : BIGINT
+    + product_id : BIGINT
+    + stock_quantity : INTEGER
+    + status : VARCHAR
+}
+
+entity "仓库发货记录 (rf_product_warehouse_shipment)" as WarehouseShipment {
+    + id : BIGINT
+    + product_id : BIGINT
+    + product_sell_record_id : BIGINT
+    + warehouse_id : BIGINT
+    + status : VARCHAR
+}
+
+entity "仓库出库 (rf_warehouse_out)" as WarehouseOut {
+    + id : BIGINT
+    + warehouse_id : BIGINT
+    + product_id : BIGINT
+    + product_sell_record_id : BIGINT
+    + out_quantity : INTEGER
+}
+
+' 自提模式相关实体
+entity "自提物流记录 (rf_product_self_pickup_logistics)" as SelfPickupLogistics {
+    + id : BIGINT
+    + product_id : BIGINT
+    + product_sell_record_id : BIGINT
+    + pickup_address : TEXT
+    + buyer_receipt_address : TEXT
+    + status : VARCHAR
+}
+
+entity "非寄卖信息 (rf_product_non_consignment_info)" as NonConsignmentInfo {
+    + id : BIGINT
+    + product_id : BIGINT
+    + seller_id : BIGINT
+    + delivery_method : VARCHAR
+    + status : VARCHAR
+}
+
+' 退货相关实体
+entity "商品退货记录 (rf_product_return_record)" as ReturnRecord {
+    + id : BIGINT
+    + product_id : BIGINT
+    + product_sell_record_id : BIGINT
+    + is_auction : BOOLEAN
+    + status : VARCHAR
+    + seller_accept_return : BOOLEAN
+}
+
+entity "商品退回卖家记录 (rf_product_return_to_seller)" as ReturnToSeller {
+    + id : BIGINT
+    + product_id : BIGINT
+    + product_sell_record_id : BIGINT
+    + warehouse_id : BIGINT
+    + seller_receipt_address : TEXT
+    + status : VARCHAR
+}
+
+' 物流任务实体
+entity "内部物流任务 (rf_internal_logistics_task)" as LogisticsTask {
+    + id : BIGINT
+    + product_id : BIGINT
+    + task_type : VARCHAR
+    + source_address : TEXT
+    + target_address : TEXT
+    + status : VARCHAR
+}
+
+' 仓库实体
+entity "仓库 (rf_warehouse)" as Warehouse {
+    + id : BIGINT
+    + name : VARCHAR
+    + address : TEXT
+    + status : VARCHAR
+}
+
+' 用户实体
+entity "系统用户 (sys_user)" as User {
+    + id : BIGINT
+    + username : VARCHAR
+    + role_id : BIGINT
+    + client_role : VARCHAR
+}
+
+' 关系定义
+
+' 商品与销售记录的关系
+Product ||--o{ SellRecord : "一对多"
+SellRecord }o--|| Product : "属于"
+
+' 寄卖模式关系
+Product ||--o| AuctionLogistics : "寄卖物流"
+AuctionLogistics }o--|| Warehouse : "目标仓库"
+
+Product ||--o{ WarehouseInApply : "入库申请"
+WarehouseInApply }o--|| Warehouse : "申请仓库"
+WarehouseInApply ||--o| WarehouseIn : "生成入库记录"
+
+WarehouseIn ||--o| WarehouseStock : "创建库存"
+WarehouseStock }o--|| Warehouse : "存储仓库"
+
+Product ||--o{ WarehouseShipment : "仓库发货"
+WarehouseShipment }o--|| Warehouse : "发货仓库"
+SellRecord ||--o| WarehouseShipment : "销售发货"
+
+WarehouseOut }o--|| Warehouse : "出库仓库"
+SellRecord ||--o| WarehouseOut : "销售出库"
+
+' 自提模式关系
+Product ||--o| SelfPickupLogistics : "自提物流"
+SellRecord ||--o| SelfPickupLogistics : "销售自提"
+
+Product ||--o| NonConsignmentInfo : "非寄卖信息"
+NonConsignmentInfo }o--|| User : "卖家"
+
+' 退货关系
+Product ||--o{ ReturnRecord : "退货记录"
+SellRecord ||--o{ ReturnRecord : "销售退货"
+
+ReturnRecord ||--o| ReturnToSeller : "退回卖家"
+ReturnToSeller }o--|| Warehouse : "退回仓库"
+
+' 物流任务关系
+LogisticsTask }o--|| Product : "商品任务"
+LogisticsTask }o--o| AuctionLogistics : "寄卖物流任务"
+LogisticsTask }o--o| WarehouseShipment : "仓库发货任务"
+LogisticsTask }o--o| ReturnRecord : "退货任务"
+LogisticsTask }o--o| ReturnToSeller : "退回卖家任务"
+
+' 用户关系
+User ||--o{ Product : "发布商品"
+User ||--o{ SellRecord : "销售记录"
+User ||--o{ SellRecord : "购买记录"
+
+' 添加注释说明流转方向
+note right of AuctionLogistics
+  寄卖模式：
+  卖家 → 仓库
+end note
+
+note right of WarehouseShipment
+  寄卖模式：
+  仓库 → 买家
+end note
+
+note right of SelfPickupLogistics
+  自提模式：
+  卖家 → 买家
+end note
+
+note right of ReturnRecord
+  退货模式：
+  买家 → 仓库/卖家
+end note
+
+@enduml

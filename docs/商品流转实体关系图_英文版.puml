@@ -1,0 +1,217 @@
+@startuml Product Flow Entity Relationship Diagram
+
+!theme plain
+skinparam linetype ortho
+skinparam backgroundColor #FFFFFF
+skinparam class {
+    BackgroundColor #E8F4FD
+    BorderColor #2E86AB
+    ArrowColor #2E86AB
+}
+
+' Core Entities
+entity "Product (rf_product)" as Product {
+    + id : BIGINT
+    + user_id : BIGINT
+    + name : VARCHAR
+    + is_auction : BOOLEAN
+    + is_self_pickup : BOOLEAN
+    + warehouse_id : BIGINT
+    + status : VARCHAR
+}
+
+entity "Product Sell Record (rf_product_sell_record)" as SellRecord {
+    + id : BIGINT
+    + product_id : BIGINT
+    + seller_user_id : BIGINT
+    + buyer_user_id : BIGINT
+    + is_auction : BOOLEAN
+    + is_self_pickup : BOOLEAN
+    + status : VARCHAR
+}
+
+' Consignment Mode Related Entities
+entity "Auction Logistics Record (rf_product_auction_logistics)" as AuctionLogistics {
+    + id : BIGINT
+    + product_id : BIGINT
+    + pickup_address : TEXT
+    + warehouse_id : BIGINT
+    + status : VARCHAR
+}
+
+entity "Warehouse In Apply (rf_warehouse_in_apply)" as WarehouseInApply {
+    + id : BIGINT
+    + warehouse_id : BIGINT
+    + product_id : BIGINT
+    + source : VARCHAR
+    + audit_result : VARCHAR
+    + status : VARCHAR
+}
+
+entity "Warehouse In (rf_warehouse_in)" as WarehouseIn {
+    + id : BIGINT
+    + warehouse_id : BIGINT
+    + product_id : BIGINT
+    + in_quantity : INTEGER
+    + in_time : TIMESTAMP
+}
+
+entity "Warehouse Stock (rf_warehouse_stock)" as WarehouseStock {
+    + id : BIGINT
+    + warehouse_id : BIGINT
+    + product_id : BIGINT
+    + stock_quantity : INTEGER
+    + status : VARCHAR
+}
+
+entity "Warehouse Shipment Record (rf_product_warehouse_shipment)" as WarehouseShipment {
+    + id : BIGINT
+    + product_id : BIGINT
+    + product_sell_record_id : BIGINT
+    + warehouse_id : BIGINT
+    + status : VARCHAR
+}
+
+entity "Warehouse Out (rf_warehouse_out)" as WarehouseOut {
+    + id : BIGINT
+    + warehouse_id : BIGINT
+    + product_id : BIGINT
+    + product_sell_record_id : BIGINT
+    + out_quantity : INTEGER
+}
+
+' Self-Pickup Mode Related Entities
+entity "Self-Pickup Logistics Record (rf_product_self_pickup_logistics)" as SelfPickupLogistics {
+    + id : BIGINT
+    + product_id : BIGINT
+    + product_sell_record_id : BIGINT
+    + pickup_address : TEXT
+    + buyer_receipt_address : TEXT
+    + status : VARCHAR
+}
+
+entity "Non-Consignment Info (rf_product_non_consignment_info)" as NonConsignmentInfo {
+    + id : BIGINT
+    + product_id : BIGINT
+    + seller_id : BIGINT
+    + delivery_method : VARCHAR
+    + status : VARCHAR
+}
+
+' Return Related Entities
+entity "Product Return Record (rf_product_return_record)" as ReturnRecord {
+    + id : BIGINT
+    + product_id : BIGINT
+    + product_sell_record_id : BIGINT
+    + is_auction : BOOLEAN
+    + status : VARCHAR
+    + seller_accept_return : BOOLEAN
+}
+
+entity "Product Return to Seller Record (rf_product_return_to_seller)" as ReturnToSeller {
+    + id : BIGINT
+    + product_id : BIGINT
+    + product_sell_record_id : BIGINT
+    + warehouse_id : BIGINT
+    + seller_receipt_address : TEXT
+    + status : VARCHAR
+}
+
+' Logistics Task Entity
+entity "Internal Logistics Task (rf_internal_logistics_task)" as LogisticsTask {
+    + id : BIGINT
+    + product_id : BIGINT
+    + task_type : VARCHAR
+    + source_address : TEXT
+    + target_address : TEXT
+    + status : VARCHAR
+}
+
+' Warehouse Entity
+entity "Warehouse (rf_warehouse)" as Warehouse {
+    + id : BIGINT
+    + name : VARCHAR
+    + address : TEXT
+    + status : VARCHAR
+}
+
+' User Entity
+entity "System User (sys_user)" as User {
+    + id : BIGINT
+    + username : VARCHAR
+    + role_id : BIGINT
+    + client_role : VARCHAR
+}
+
+' Relationship Definitions
+
+' Product and Sell Record Relationship
+Product ||--o{ SellRecord : "One-to-Many"
+SellRecord }o--|| Product : "Belongs to"
+
+' Consignment Mode Relationships
+Product ||--o| AuctionLogistics : "Consignment Logistics"
+AuctionLogistics }o--|| Warehouse : "Target Warehouse"
+
+Product ||--o{ WarehouseInApply : "Inbound Application"
+WarehouseInApply }o--|| Warehouse : "Application Warehouse"
+WarehouseInApply ||--o| WarehouseIn : "Generate Inbound Record"
+
+WarehouseIn ||--o| WarehouseStock : "Create Stock"
+WarehouseStock }o--|| Warehouse : "Storage Warehouse"
+
+Product ||--o{ WarehouseShipment : "Warehouse Shipment"
+WarehouseShipment }o--|| Warehouse : "Shipment Warehouse"
+SellRecord ||--o| WarehouseShipment : "Sales Shipment"
+
+WarehouseOut }o--|| Warehouse : "Outbound Warehouse"
+SellRecord ||--o| WarehouseOut : "Sales Outbound"
+
+' Self-Pickup Mode Relationships
+Product ||--o| SelfPickupLogistics : "Self-Pickup Logistics"
+SellRecord ||--o| SelfPickupLogistics : "Sales Self-Pickup"
+
+Product ||--o| NonConsignmentInfo : "Non-Consignment Info"
+NonConsignmentInfo }o--|| User : "Seller"
+
+' Return Relationships
+Product ||--o{ ReturnRecord : "Return Record"
+SellRecord ||--o{ ReturnRecord : "Sales Return"
+
+ReturnRecord ||--o| ReturnToSeller : "Return to Seller"
+ReturnToSeller }o--|| Warehouse : "Return Warehouse"
+
+' Logistics Task Relationships
+LogisticsTask }o--|| Product : "Product Task"
+LogisticsTask }o--o| AuctionLogistics : "Consignment Logistics Task"
+LogisticsTask }o--o| WarehouseShipment : "Warehouse Shipment Task"
+LogisticsTask }o--o| ReturnRecord : "Return Task"
+LogisticsTask }o--o| ReturnToSeller : "Return to Seller Task"
+
+' User Relationships
+User ||--o{ Product : "Publish Product"
+User ||--o{ SellRecord : "Sales Record"
+User ||--o{ SellRecord : "Purchase Record"
+
+' Add flow direction notes
+note right of AuctionLogistics
+  Consignment Mode:
+  Seller → Warehouse
+end note
+
+note right of WarehouseShipment
+  Consignment Mode:
+  Warehouse → Buyer
+end note
+
+note right of SelfPickupLogistics
+  Self-Pickup Mode:
+  Seller → Buyer
+end note
+
+note right of ReturnRecord
+  Return Mode:
+  Buyer → Warehouse/Seller
+end note
+
+@enduml

@@ -1,6 +1,6 @@
 # ReFlip Market (Second-hand Furniture Trading Platform)
 
-A full-stack project for second-hand furniture circulation, including backend multi-module services (Spring Boot 3 + MyBatis-Plus + Redis + JWT), admin panel (React 19 + Vite 6 + Tailwind v4), and mobile/client applications (Flutter 3, integrated with Google Sign-In, Google Maps, Stripe payment, etc.). This repository is suitable as a complete project experience showcase, demonstrating capabilities from system design to engineering implementation and business process closure.
+A full-stack project for second-hand furniture circulation, including backend multi-module services (Spring Boot 3 + MyBatis-Plus + Redis + JWT), admin panel (React 19 + Vite 6 + Tailwind v4), and mobile/client applications (Flutter 3, integrated with Google Sign-In, Google Maps, Stripe payment, etc.).
 
 ## Features & Screenshots
 
@@ -103,6 +103,16 @@ A full-stack project for second-hand furniture circulation, including backend mu
   - `backend-common`: Common utilities and infrastructure
 - Admin Panel: `frontend-panel-react` (React + Vite + Tailwind v4 + TanStack Router)
 - Client: `frontend-app/reflip_flutter` (Flutter 3, Dio/Google Sign-In/Google Maps/Stripe)
+
+### Product Flow Entity Relationship Diagram
+
+<div align="center">
+
+<img src="img/er.en.svg" alt="Product Flow Entity Relationship Diagram" width="800" />
+
+*Product Flow Entity Relationship Diagram - Shows data entity relationships for consignment mode, self-pickup mode, and return processes*
+
+</div>
 
 ## Tech Stack
 

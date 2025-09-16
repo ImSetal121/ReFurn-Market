@@ -1,0 +1,217 @@
+@startuml 商品流通エンティティ関係図
+
+!theme plain
+skinparam linetype ortho
+skinparam backgroundColor #FFFFFF
+skinparam class {
+    BackgroundColor #E8F4FD
+    BorderColor #2E86AB
+    ArrowColor #2E86AB
+}
+
+' コアエンティティ
+entity "商品 (rf_product)" as Product {
+    + id : BIGINT
+    + user_id : BIGINT
+    + name : VARCHAR
+    + is_auction : BOOLEAN
+    + is_self_pickup : BOOLEAN
+    + warehouse_id : BIGINT
+    + status : VARCHAR
+}
+
+entity "商品販売記録 (rf_product_sell_record)" as SellRecord {
+    + id : BIGINT
+    + product_id : BIGINT
+    + seller_user_id : BIGINT
+    + buyer_user_id : BIGINT
+    + is_auction : BOOLEAN
+    + is_self_pickup : BOOLEAN
+    + status : VARCHAR
+}
+
+' 委託販売モード関連エンティティ
+entity "委託物流記録 (rf_product_auction_logistics)" as AuctionLogistics {
+    + id : BIGINT
+    + product_id : BIGINT
+    + pickup_address : TEXT
+    + warehouse_id : BIGINT
+    + status : VARCHAR
+}
+
+entity "倉庫入庫申請 (rf_warehouse_in_apply)" as WarehouseInApply {
+    + id : BIGINT
+    + warehouse_id : BIGINT
+    + product_id : BIGINT
+    + source : VARCHAR
+    + audit_result : VARCHAR
+    + status : VARCHAR
+}
+
+entity "倉庫入庫 (rf_warehouse_in)" as WarehouseIn {
+    + id : BIGINT
+    + warehouse_id : BIGINT
+    + product_id : BIGINT
+    + in_quantity : INTEGER
+    + in_time : TIMESTAMP
+}
+
+entity "倉庫在庫 (rf_warehouse_stock)" as WarehouseStock {
+    + id : BIGINT
+    + warehouse_id : BIGINT
+    + product_id : BIGINT
+    + stock_quantity : INTEGER
+    + status : VARCHAR
+}
+
+entity "倉庫出荷記録 (rf_product_warehouse_shipment)" as WarehouseShipment {
+    + id : BIGINT
+    + product_id : BIGINT
+    + product_sell_record_id : BIGINT
+    + warehouse_id : BIGINT
+    + status : VARCHAR
+}
+
+entity "倉庫出庫 (rf_warehouse_out)" as WarehouseOut {
+    + id : BIGINT
+    + warehouse_id : BIGINT
+    + product_id : BIGINT
+    + product_sell_record_id : BIGINT
+    + out_quantity : INTEGER
+}
+
+' セルフピックアップモード関連エンティティ
+entity "セルフピックアップ物流記録 (rf_product_self_pickup_logistics)" as SelfPickupLogistics {
+    + id : BIGINT
+    + product_id : BIGINT
+    + product_sell_record_id : BIGINT
+    + pickup_address : TEXT
+    + buyer_receipt_address : TEXT
+    + status : VARCHAR
+}
+
+entity "非委託情報 (rf_product_non_consignment_info)" as NonConsignmentInfo {
+    + id : BIGINT
+    + product_id : BIGINT
+    + seller_id : BIGINT
+    + delivery_method : VARCHAR
+    + status : VARCHAR
+}
+
+' 返品関連エンティティ
+entity "商品返品記録 (rf_product_return_record)" as ReturnRecord {
+    + id : BIGINT
+    + product_id : BIGINT
+    + product_sell_record_id : BIGINT
+    + is_auction : BOOLEAN
+    + status : VARCHAR
+    + seller_accept_return : BOOLEAN
+}
+
+entity "商品売主返却記録 (rf_product_return_to_seller)" as ReturnToSeller {
+    + id : BIGINT
+    + product_id : BIGINT
+    + product_sell_record_id : BIGINT
+    + warehouse_id : BIGINT
+    + seller_receipt_address : TEXT
+    + status : VARCHAR
+}
+
+' 物流タスクエンティティ
+entity "内部物流タスク (rf_internal_logistics_task)" as LogisticsTask {
+    + id : BIGINT
+    + product_id : BIGINT
+    + task_type : VARCHAR
+    + source_address : TEXT
+    + target_address : TEXT
+    + status : VARCHAR
+}
+
+' 倉庫エンティティ
+entity "倉庫 (rf_warehouse)" as Warehouse {
+    + id : BIGINT
+    + name : VARCHAR
+    + address : TEXT
+    + status : VARCHAR
+}
+
+' ユーザーエンティティ
+entity "システムユーザー (sys_user)" as User {
+    + id : BIGINT
+    + username : VARCHAR
+    + role_id : BIGINT
+    + client_role : VARCHAR
+}
+
+' 関係定義
+
+' 商品と販売記録の関係
+Product ||--o{ SellRecord : "1対多"
+SellRecord }o--|| Product : "所属"
+
+' 委託販売モード関係
+Product ||--o| AuctionLogistics : "委託物流"
+AuctionLogistics }o--|| Warehouse : "目標倉庫"
+
+Product ||--o{ WarehouseInApply : "入庫申請"
+WarehouseInApply }o--|| Warehouse : "申請倉庫"
+WarehouseInApply ||--o| WarehouseIn : "入庫記録生成"
+
+WarehouseIn ||--o| WarehouseStock : "在庫作成"
+WarehouseStock }o--|| Warehouse : "保管倉庫"
+
+Product ||--o{ WarehouseShipment : "倉庫出荷"
+WarehouseShipment }o--|| Warehouse : "出荷倉庫"
+SellRecord ||--o| WarehouseShipment : "販売出荷"
+
+WarehouseOut }o--|| Warehouse : "出庫倉庫"
+SellRecord ||--o| WarehouseOut : "販売出庫"
+
+' セルフピックアップモード関係
+Product ||--o| SelfPickupLogistics : "セルフピックアップ物流"
+SellRecord ||--o| SelfPickupLogistics : "販売セルフピックアップ"
+
+Product ||--o| NonConsignmentInfo : "非委託情報"
+NonConsignmentInfo }o--|| User : "売主"
+
+' 返品関係
+Product ||--o{ ReturnRecord : "返品記録"
+SellRecord ||--o{ ReturnRecord : "販売返品"
+
+ReturnRecord ||--o| ReturnToSeller : "売主返却"
+ReturnToSeller }o--|| Warehouse : "返却倉庫"
+
+' 物流タスク関係
+LogisticsTask }o--|| Product : "商品タスク"
+LogisticsTask }o--o| AuctionLogistics : "委託物流タスク"
+LogisticsTask }o--o| WarehouseShipment : "倉庫出荷タスク"
+LogisticsTask }o--o| ReturnRecord : "返品タスク"
+LogisticsTask }o--o| ReturnToSeller : "売主返却タスク"
+
+' ユーザー関係
+User ||--o{ Product : "商品投稿"
+User ||--o{ SellRecord : "販売記録"
+User ||--o{ SellRecord : "購入記録"
+
+' 流通方向の説明コメントを追加
+note right of AuctionLogistics
+  委託販売モード：
+  売主 → 倉庫
+end note
+
+note right of WarehouseShipment
+  委託販売モード：
+  倉庫 → 買主
+end note
+
+note right of SelfPickupLogistics
+  セルフピックアップモード：
+  売主 → 買主
+end note
+
+note right of ReturnRecord
+  返品モード：
+  買主 → 倉庫/売主
+end note
+
+@enduml

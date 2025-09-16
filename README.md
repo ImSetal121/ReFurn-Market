@@ -1,6 +1,6 @@
 # ReFlip Market（二手家具交易平台）
 
-一个面向二手家具流通的全栈项目，包含后端多模块服务（Spring Boot 3 + MyBatis-Plus + Redis + JWT）、管理后台（React 19 + Vite 6 + Tailwind v4）、以及移动端/客户端（Flutter 3，集成 Google 登录、Google 地图、Stripe 支付、WebSocket 聊天等）。本仓库适合作为完整项目经历展示，体现从系统设计、到工程落地与业务闭环的能力。
+一个面向二手家具流通的全栈项目，包含后端多模块服务（Spring Boot 3 + MyBatis-Plus + Redis + JWT）、管理后台（React 19 + Vite 6 + Tailwind v4）、以及移动端/客户端（Flutter 3，集成 Google 登录、Google 地图、Stripe 支付、WebSocket 聊天等）。
 
 ## 功能与截图展示
 
@@ -101,6 +101,16 @@
   - `backend-common`：通用工具与基础设施
 - 管理后台：`frontend-panel-react`（React + Vite + Tailwind v4 + TanStack Router）
 - 客户端：`frontend-app/reflip_flutter`（Flutter 3，Dio/Google Sign-In/Google Maps/Stripe）
+
+### 商品流转实体关系图
+
+<div align="center">
+
+<img src="img/er.svg" alt="商品流转实体关系图" width="800" />
+
+*商品流转实体关系图 - 展示寄卖模式、自提模式和退货流程的数据实体关系*
+
+</div>
 
 ## 技术栈
 
